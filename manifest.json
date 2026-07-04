@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Terminal Greeting",
+    "description": "Terminal-style prompt on your home page: time-of-day greeting, live clock, blinking cursor, now-playing ticker, playing-track marker, optional night accent shift and a fake boot screen. Made for the text theme — works with any theme.",
+    "preview": "preview.png",
+    "main": "terminal-greeting.js",
+    "readme": "README.md",
+    "authors": [{ "name": "fdeox", "url": "https://github.com/fdeox" }],
+    "tags": ["terminal", "tui", "text theme", "greeting", "clock", "now playing"]
+  }
+]
