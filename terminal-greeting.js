@@ -158,29 +158,32 @@
         ].join("\n");
         document.head.appendChild(baseStyle);
 
-        /* ---- night shift ---- */
-        const NIGHT_CSS =
-            ":root{" +
-            "--spice-accent:#d9913d;" +
-            "--spice-accent-active:#ffb86c;" +
-            "--spice-banner:#ffb86c;" +
-            "--spice-border-active:#ffb86c;" +
-            "--spice-button:#d9913d;" +
-            "--spice-button-active:#ffb86c;" +
-            "--spice-rgb-accent:217,145,61;" +
-            "--spice-rgb-accent-active:255,184,108;" +
-            "--spice-rgb-button:217,145,61;" +
-            "--spice-rgb-button-active:255,184,108;" +
-            "}";
+        /* ---- night shift ----
+           set the variables inline on <html>: stylesheet order can't override
+           an inline custom property, so this wins against any theme css */
+        const NIGHT_VARS = {
+            "--spice-accent": "#d9913d",
+            "--spice-accent-active": "#ffb86c",
+            "--spice-banner": "#ffb86c",
+            "--spice-border-active": "#ffb86c",
+            "--spice-button": "#d9913d",
+            "--spice-button-active": "#ffb86c",
+            "--spice-rgb-accent": "217,145,61",
+            "--spice-rgb-accent-active": "255,184,108",
+            "--spice-rgb-button": "217,145,61",
+            "--spice-rgb-button-active": "255,184,108",
+        };
+        let nightOn = false;
         function applyNight(on) {
-            let s = document.getElementById("terminal-greeting-night");
-            if (on && !s) {
-                s = document.createElement("style");
-                s.id = "terminal-greeting-night";
-                s.textContent = NIGHT_CSS;
-                document.head.appendChild(s);
-            } else if (!on && s) {
-                s.remove();
+            if (on === nightOn) return;
+            nightOn = on;
+            const root = document.documentElement.style;
+            for (const key of Object.keys(NIGHT_VARS)) {
+                if (on) {
+                    root.setProperty(key, NIGHT_VARS[key]);
+                } else {
+                    root.removeProperty(key);
+                }
             }
         }
 
