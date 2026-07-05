@@ -220,8 +220,25 @@
         }
 
         /* ---- banner ---- */
-        let showNowPlaying = false;
+        // the prompt rotates: greeting -> now playing -> listening uptime
+        let rot = 0;
         let lastBannerKey = "";
+
+        let listenSec = 0;
+        setInterval(() => {
+            try {
+                if (Spicetify.Player.isPlaying()) listenSec += 5;
+            } catch (e) {
+                /* player not ready yet */
+            }
+        }, 5000);
+
+        function uptimeText() {
+            if (listenSec < 60) return null;
+            const h = (listenSec / 3600) | 0;
+            const m = ((listenSec % 3600) / 60) | 0;
+            return "uptime: " + (h ? h + "h " : "") + m + "m of music";
+        }
 
         function bannerTarget() {
             return (
@@ -252,8 +269,9 @@
             }
 
             const now = new Date();
-            const np = settings.nowPlaying && showNowPlaying ? nowPlayingText() : null;
-            const body = np ? "♪ " + np : greeting(now.getHours()) + ", " + userName();
+            const np = settings.nowPlaying && rot === 1 ? nowPlayingText() : null;
+            const up = rot === 2 ? uptimeText() : null;
+            const body = np ? "♪ " + np : up || greeting(now.getHours()) + ", " + userName();
             const time = "[" + pad(now.getHours()) + ":" + pad(now.getMinutes()) + "]";
 
             // rebuilding every tick would restart the cursor blink animation,
@@ -403,14 +421,14 @@
         tick();
         mark();
         setInterval(() => {
-            showNowPlaying = !showNowPlaying;
+            rot = (rot + 1) % 3;
             tick();
         }, 8000);
         setInterval(tick, 1000);
         setInterval(mark, 1500);
         try {
             Spicetify.Player.addEventListener("songchange", () => {
-                showNowPlaying = true;
+                rot = 1;
                 tick();
                 mark();
             });
