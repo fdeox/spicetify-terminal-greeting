@@ -7,6 +7,7 @@
     const STORAGE_KEY = "terminal-greeting:settings";
     const DEFAULTS = {
         name: "",          // empty -> resolved from the Spotify display name
+        host: "spotify",   // the part after the @ in the prompt
         nowPlaying: true,  // rotate the prompt with the current track
         trackMarker: true, // mark the playing track green in tracklists
         nightShift: false, // amber accents between 22:00 and 05:00
@@ -30,6 +31,7 @@
 
     let settings = loadSettings();
     const userName = () => settings.name || "user";
+    const hostName = () => settings.host || "spotify";
     const pad = (n) => String(n).padStart(2, "0");
 
     function greeting(hour) {
@@ -256,14 +258,14 @@
 
             // rebuilding every tick would restart the cursor blink animation,
             // so skip the DOM work when nothing visible changed
-            const key = userName() + "|" + body + "|" + time;
+            const key = userName() + "@" + hostName() + "|" + body + "|" + time;
             if (!moved && key === lastBannerKey) return;
             lastBannerKey = key;
 
             banner.textContent = "";
             const user = document.createElement("span");
             user.className = "tg-accent";
-            user.textContent = userName() + "@spotify";
+            user.textContent = userName() + "@" + hostName();
             const path = document.createTextNode(":~ $ ");
             const text = document.createElement("span");
             text.textContent = body + "  ";
@@ -317,15 +319,24 @@
             const wrap = document.createElement("div");
             wrap.style.cssText = "display:flex;flex-direction:column;gap:12px;font-size:14px;";
 
+            const inputCss =
+                "padding:6px 8px;background:var(--spice-highlight);color:var(--spice-text);" +
+                "border:1px solid var(--spice-border-inactive,#555);border-radius:4px;";
             const nameLabel = document.createElement("label");
             nameLabel.textContent = "Name shown in the prompt:";
             const nameInput = document.createElement("input");
             nameInput.type = "text";
             nameInput.value = settings.name;
-            nameInput.style.cssText =
-                "padding:6px 8px;background:var(--spice-highlight);color:var(--spice-text);" +
-                "border:1px solid var(--spice-border-inactive,#555);border-radius:4px;";
+            nameInput.style.cssText = inputCss;
             nameLabel.appendChild(nameInput);
+
+            const hostLabel = document.createElement("label");
+            hostLabel.textContent = "Host shown after the @ (e.g. spotify, termspot):";
+            const hostInput = document.createElement("input");
+            hostInput.type = "text";
+            hostInput.value = settings.host || "spotify";
+            hostInput.style.cssText = inputCss;
+            hostLabel.appendChild(hostInput);
 
             const boxes = [
                 ["nowPlaying", "Rotate the prompt with the current track"],
@@ -350,6 +361,7 @@
                 "background:var(--spice-button-active);color:var(--spice-main);border:none;border-radius:4px;";
             save.addEventListener("click", () => {
                 settings.name = nameInput.value.trim();
+                settings.host = hostInput.value.trim() || "spotify";
                 boxes.forEach((l) => {
                     const c = l.querySelector("input");
                     settings[c.dataset.key] = c.checked;
@@ -363,7 +375,7 @@
                 Spicetify.showNotification("Terminal Greeting: settings saved");
             });
 
-            wrap.append(nameLabel, ...boxes, save);
+            wrap.append(nameLabel, hostLabel, ...boxes, save);
             Spicetify.PopupModal.display({ title: "Terminal Greeting", content: wrap });
         }
 
