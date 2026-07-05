@@ -7,7 +7,7 @@
     const STORAGE_KEY = "terminal-greeting:settings";
     const DEFAULTS = {
         name: "",          // empty -> resolved from the Spotify display name
-        host: "spotify",   // the part after the @ in the prompt
+        host: "termspot",  // the part after the @ in the prompt — change it to anything
         nowPlaying: true,  // rotate the prompt with the current track
         trackMarker: true, // mark the playing track green in tracklists
         nightShift: false, // amber accents between 22:00 and 05:00
