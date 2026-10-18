@@ -35,6 +35,9 @@ fine on any other Spicetify theme too.
 
 ## Install
 
+Works on Spotify 1.2 and 1.3 (last checked with Spotify 1.3.3 and Spicetify
+2.45.3).
+
 ### Marketplace
 
 Search for **Terminal Greeting** in the Spicetify Marketplace and click install.
