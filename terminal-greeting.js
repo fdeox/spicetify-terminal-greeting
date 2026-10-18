@@ -241,11 +241,21 @@
         }
 
         function bannerTarget() {
-            return (
+            const named =
                 document.querySelector(".view-homeShortcutsGrid-shortcuts") ||
-                document.querySelector(".main-home-content > div") ||
-                null
-            );
+                document.querySelector(".main-home-content > div");
+            if (named) return named;
+            // newer Spotify, without Spicetify's names: the box holding all
+            // the home shortcuts (each has a shortcut-background), or else the
+            // home page's first row
+            const home = document.querySelector('section[data-testid="home-page"]');
+            if (!home) return null;
+            const shortcuts = [...home.querySelectorAll('[data-testid="shortcut-background"]')];
+            let grid = shortcuts[0];
+            while (grid && grid !== home && !shortcuts.every((s) => grid.contains(s))) grid = grid.parentElement;
+            if (grid && grid !== home) return grid.parentElement.tagName === "SECTION" ? grid.parentElement : grid;
+            const content = home.children[home.children.length - 1];
+            return (content && content.firstElementChild) || null;
         }
 
         function renderBanner() {
@@ -267,6 +277,9 @@
                 target.parentElement.insertBefore(banner, target);
                 moved = true;
             }
+            // (newer Spotify puts the shortcuts first with a flex order: the
+            // banner takes the same, so it stays right above them)
+            banner.style.order = getComputedStyle(target).order;
 
             const now = new Date();
             const np = settings.nowPlaying && rot === 1 ? nowPlayingText() : null;
@@ -320,12 +333,16 @@
             const title = currentTitle();
             if (!title) return;
             document
-                .querySelectorAll('.main-trackList-trackListRow, [data-testid="tracklist-row"]')
+                .querySelectorAll(
+                    '.main-trackList-trackListRow, [data-testid="tracklist-row"], [role="grid"] [role="row"]:not([aria-rowindex="1"])'
+                )
                 .forEach((row) => {
+                    // (newer Spotify: the title is the second column's text)
                     const cell =
                         row.querySelector(".main-trackList-rowTitle") ||
                         row.querySelector('[data-testid="internal-track-link"]') ||
-                        row.querySelector('a[href*="/track/"]');
+                        row.querySelector('a[href*="/track/"]') ||
+                        row.querySelector('[aria-colindex="2"] [dir="auto"]');
                     if (cell && titleMatches(cell.textContent, title)) {
                         cell.classList.add("terminal-greeting-playing");
                     }
